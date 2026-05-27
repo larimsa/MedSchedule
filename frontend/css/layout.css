@@ -1,0 +1,140 @@
+/* ─────────────────────────────────────────────
+   layout.css — Header, nav e estrutura principal
+   ───────────────────────────────────────────── */
+
+/* ─── HEADER ─── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: var(--green);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.logo-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.logo-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.header-doctor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #E1F5EE;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green-deeper);
+}
+
+/* ─── NAV ─── */
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  gap: 0;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  padding: 0 18px;
+  height: 48px;
+  font-size: 13.5px;
+  font-weight: 400;
+  font-family: var(--font);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.nav-btn i { font-size: 16px; }
+.nav-btn:hover { color: var(--text); }
+
+.nav-btn.active {
+  color: var(--green);
+  border-bottom-color: var(--green);
+  font-weight: 600;
+}
+
+/* ─── MAIN ─── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.75rem 2rem;
+}
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* ─── SECTION TITLE ─── */
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title i { font-size: 20px; color: var(--green); }
+
+/* ─── TWO-COL GRID ─── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  header { padding: 0 1rem; }
+  nav    { padding: 0 1rem; overflow-x: auto; }
+  .main  { padding: 1.25rem 1rem; }
+  .two-col { grid-template-columns: 1fr; }
+  .logo-sub { display: none; }
+}

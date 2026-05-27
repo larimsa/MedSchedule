@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedSchedule — Sistema de Agendamento Médico</title>
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Ícones Tabler -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/sections.css">
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════ -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="ti ti-stethoscope" aria-hidden="true"></i>
+      </div>
+      <span class="logo-name">MedSchedule</span>
+      <span class="logo-sub">Sistema de Agendamento Médico</span>
+    </div>
+
+    <div class="header-doctor" id="header-doctor">
+      <i class="ti ti-circle-check" aria-hidden="true"></i>
+      <span id="header-doctor-name">Dr. Carlos Mendes</span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════
+       NAVEGAÇÃO
+  ══════════════════════════════════════ -->
+  <nav role="navigation" aria-label="Navegação principal">
+    <button class="nav-btn active" onclick="showSection('agenda', this)" aria-current="page">
+      <i class="ti ti-calendar" aria-hidden="true"></i> Agenda
+    </button>
+    <button class="nav-btn" onclick="showSection('consultas', this)">
+      <i class="ti ti-clipboard-list" aria-hidden="true"></i> Consultas
+    </button>
+    <button class="nav-btn" onclick="showSection('agendar', this)">
+      <i class="ti ti-calendar-plus" aria-hidden="true"></i> Marcar Consulta
+    </button>
+    <button class="nav-btn" onclick="showSection('perfil', this)">
+      <i class="ti ti-user-circle" aria-hidden="true"></i> Perfil Médico
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       CONTEÚDO PRINCIPAL
+  ══════════════════════════════════════ -->
+  <main class="main" role="main">
+
+    <!-- ── AGENDA ── -->
+    <section id="agenda" class="section active" aria-label="Agenda médica">
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label"><i class="ti ti-calendar-event" aria-hidden="true"></i> Consultas hoje</div>
+          <div class="metric-value green" id="metric-hoje">0</div>
+          <div class="metric-sub" id="metric-hoje-sub">carregando...</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><i class="ti ti-clock" aria-hidden="true"></i> Próxima consulta</div>
+          <div class="metric-value amber" id="metric-proxima">—</div>
+          <div class="metric-sub" id="metric-proxima-sub"></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><i class="ti ti-users" aria-hidden="true"></i> Total no mês</div>
+          <div class="metric-value blue" id="metric-mes">0</div>
+          <div class="metric-sub">agendamentos</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><i class="ti ti-trending-up" aria-hidden="true"></i> Taxa de retorno</div>
+          <div class="metric-value green" id="metric-retorno">0%</div>
+          <div class="metric-sub">dos pacientes</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="ti ti-calendar-week" aria-hidden="true"></i> Agenda do dia
+          </div>
+          <div class="day-nav">
+            <button class="day-nav-btn" onclick="changeDay(-1)" aria-label="Dia anterior">
+              <i class="ti ti-chevron-left" aria-hidden="true"></i>
+            </button>
+            <span class="day-label" id="day-label"></span>
+            <button class="day-nav-btn" onclick="changeDay(1)" aria-label="Próximo dia">
+              <i class="ti ti-chevron-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+        <div class="timeline" id="timeline" role="list" aria-label="Horários do dia"></div>
+      </div>
+
+    </section>
+
+    <!-- ── CONSULTAS ── -->
+    <section id="consultas" class="section" aria-label="Lista de consultas">
+
+      <div class="section-title">
+        <i class="ti ti-clipboard-list" aria-hidden="true"></i> Todas as consultas
+      </div>
+
+      <div class="filter-bar" role="group" aria-label="Filtrar por tipo">
+        <button class="filter-btn active" onclick="filterConsultas('todas', this)">Todas</button>
+        <button class="filter-btn" onclick="filterConsultas('consulta', this)">Consulta</button>
+        <button class="filter-btn" onclick="filterConsultas('retorno', this)">Retorno</button>
+        <button class="filter-btn" onclick="filterConsultas('exame', this)">Exame</button>
+      </div>
+
+      <div class="consult-list" id="consult-list" role="list"></div>
+
+    </section>
+
+    <!-- ── AGENDAR ── -->
+    <section id="agendar" class="section" aria-label="Marcar nova consulta">
+
+      <div class="section-title">
+        <i class="ti ti-calendar-plus" aria-hidden="true"></i> Marcar nova consulta
+      </div>
+
+      <div class="two-col">
+
+        <!-- Formulário -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:1rem;">
+            <i class="ti ti-user" aria-hidden="true"></i> Dados do paciente
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label for="f-nome">Nome completo *</label>
+              <input type="text" id="f-nome" placeholder="Ex: Ana Paula Ferreira" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label for="f-email">Email</label>
+              <input type="email" id="f-email" placeholder="email@exemplo.com">
+            </div>
+            <div class="form-group">
+              <label for="f-tel">Telefone</label>
+              <input type="tel" id="f-tel" placeholder="(11) 99999-9999">
+            </div>
+            <div class="form-group">
+              <label for="f-data">Data *</label>
+              <input type="date" id="f-data" oninput="updatePreview(); renderHorarios()">
+            </div>
+            <div class="form-group">
+              <label for="f-hora">Horário *</label>
+              <input type="time" id="f-hora" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label for="f-tipo">Tipo de consulta</label>
+              <select id="f-tipo" oninput="updatePreview()">
+                <option value="consulta">Consulta</option>
+                <option value="retorno">Retorno</option>
+                <option value="exame">Exame</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="f-esp">Especialidade</label>
+              <select id="f-esp" oninput="updatePreview()">
+                <option>Cardiologia</option>
+                <option>Dermatologia</option>
+                <option>Pediatria</option>
+                <option>Ortopedia</option>
+                <option>Clínica Geral</option>
+                <option>Neurologia</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label for="f-obs">Observações</label>
+              <textarea id="f-obs" placeholder="Informações adicionais, queixas, alergias..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-primary" onclick="agendarConsulta()">
+              <i class="ti ti-check" aria-hidden="true"></i> Agendar consulta
+            </button>
+            <button class="btn-secondary" onclick="limparForm()">
+              <i class="ti ti-rotate" aria-hidden="true"></i> Limpar
+            </button>
+          </div>
+        </div>
+
+        <!-- Painel lateral -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:0.75rem;">
+              <i class="ti ti-clock" aria-hidden="true"></i> Horários disponíveis
+            </div>
+            <div id="horarios-container" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:0.75rem;">
+              <i class="ti ti-eye" aria-hidden="true"></i> Pré-visualização
+            </div>
+            <div id="preview-container">
+              <p style="font-size:13px;color:var(--text-faint);text-align:center;padding:1rem 0">
+                Preencha os campos ao lado para visualizar o resumo.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── PERFIL ── -->
+    <section id="perfil" class="section" aria-label="Perfil médico">
+
+      <div class="section-title">
+        <i class="ti ti-user-circle" aria-hidden="true"></i> Perfil médico
+      </div>
+
+      <div class="two-col">
+
+        <!-- Dados do médico -->
+        <div class="card">
+
+          <!-- Modo visualização -->
+          <div id="view-mode">
+            <div class="profile-hero">
+              <div class="avatar-lg" id="p-avatar">CM</div>
+              <div>
+                <div class="profile-name" id="p-nome-view">Dr. Carlos Mendes</div>
+                <div class="profile-esp"  id="p-esp-view">Cardiologia</div>
+                <div class="profile-crm"  id="p-crm-view">CRM 123456-SP</div>
+              </div>
+            </div>
+
+            <div class="profile-fields">
+              <div class="profile-field">
+                <div class="pf-label"><i class="ti ti-mail" aria-hidden="true"></i> Email</div>
+                <div class="pf-value" id="p-email-view">carlos@medschedule.com</div>
+              </div>
+              <div class="profile-field">
+                <div class="pf-label"><i class="ti ti-phone" aria-hidden="true"></i> Telefone</div>
+                <div class="pf-value" id="p-tel-view">(11) 99999-9999</div>
+              </div>
+              <div class="profile-field">
+                <div class="pf-label"><i class="ti ti-map-pin" aria-hidden="true"></i> Endereço</div>
+                <div class="pf-value" id="p-end-view">Av. Paulista, 1000 — SP</div>
+              </div>
+              <div class="profile-field">
+                <div class="pf-label"><i class="ti ti-clock" aria-hidden="true"></i> Horário</div>
+                <div class="pf-value" id="p-hor-view">Seg–Sex, 08h–18h</div>
+              </div>
+            </div>
+
+            <div style="margin-top:1.25rem;">
+              <button class="btn-secondary" onclick="toggleEdit(true)">
+                <i class="ti ti-edit" aria-hidden="true"></i> Editar perfil
+              </button>
+            </div>
+          </div>
+
+          <!-- Modo edição -->
+          <div id="edit-mode" style="display:none;">
+            <div class="card-title" style="margin-bottom:1rem;">
+              <i class="ti ti-edit" aria-hidden="true"></i> Editar perfil
+            </div>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label for="e-nome">Nome completo</label>
+                <input type="text" id="e-nome" value="Dr. Carlos Mendes">
+              </div>
+              <div class="form-group">
+                <label for="e-crm">CRM</label>
+                <input type="text" id="e-crm" value="123456-SP">
+              </div>
+              <div class="form-group">
+                <label for="e-esp">Especialidade</label>
+                <select id="e-esp">
+                  <option>Cardiologia</option>
+                  <option>Dermatologia</option>
+                  <option>Pediatria</option>
+                  <option>Ortopedia</option>
+                  <option>Clínica Geral</option>
+                  <option>Neurologia</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="e-email">Email</label>
+                <input type="email" id="e-email" value="carlos@medschedule.com">
+              </div>
+              <div class="form-group">
+                <label for="e-tel">Telefone</label>
+                <input type="tel" id="e-tel" value="(11) 99999-9999">
+              </div>
+              <div class="form-group full">
+                <label for="e-end">Endereço</label>
+                <input type="text" id="e-end" value="Av. Paulista, 1000 — SP">
+              </div>
+              <div class="form-group full">
+                <label for="e-hor">Horário de atendimento</label>
+                <input type="text" id="e-hor" value="Seg–Sex, 08h–18h">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="salvarPerfil()">
+                <i class="ti ti-check" aria-hidden="true"></i> Salvar alterações
+              </button>
+              <button class="btn-secondary" onclick="toggleEdit(false)">
+                <i class="ti ti-x" aria-hidden="true"></i> Cancelar
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:1rem;">
+            <i class="ti ti-chart-bar" aria-hidden="true"></i> Estatísticas do mês
+          </div>
+          <div id="stats-container"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast de notificação -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i id="toast-icon" class="ti ti-check" aria-hidden="true"></i>
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCRIPTS (ordem importa)
+  ══════════════════════════════════════ -->
+  <script src="js/data.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/agenda.js"></script>
+  <script src="js/consultas.js"></script>
+  <script src="js/agendar.js"></script>
+  <script src="js/perfil.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
