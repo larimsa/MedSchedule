@@ -2,38 +2,39 @@
    consultas.js — Lógica da seção Consultas
    ───────────────────────────────────────────── */
 
-/**
- * Renderiza a lista de consultas com filtro opcional.
- * @param {string} filtro - 'todas' | 'consulta' | 'retorno' | 'exame'
- */
 function renderConsultas(filtro) {
+  const medico = getMedicoAtivo();
+  if (!medico) return;
+
   const list  = document.getElementById('consult-list');
-  const items = filtro === 'todas' ? consultas : consultas.filter(c => c.tipo === filtro);
+  const base  = getConsultasMedico(medico.id);
+  const items = filtro === 'todas' ? base : base.filter(c => c.tipo === filtro);
   list.innerHTML = '';
 
   if (!items.length) {
     list.innerHTML = `
       <div class="empty-state">
         <i class="ti ti-calendar-off" aria-hidden="true"></i>
-        <p>Nenhuma consulta encontrada.</p>
+        <p>Nenhuma consulta encontrada para ${medico.nome}.</p>
       </div>`;
     return;
   }
 
-  const sorted = [...items].sort((a, b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
+  const sorted = [...items].sort((a,b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
 
   sorted.forEach(c => {
+    const inits = initials(c.nome);
     const el = document.createElement('div');
     el.className = 'consult-item';
     el.setAttribute('role', 'listitem');
     el.innerHTML = `
       <div class="ci-left">
-        <div class="ci-avatar">${initials(c.nome)}</div>
+        <div class="ci-avatar">${inits}</div>
         <div>
           <div class="ci-name">${c.nome}</div>
           <div class="ci-detail">
             <i class="ti ti-calendar" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i>
-            ${fmtDateShort(c.data)} · ${c.hora} &nbsp;·&nbsp; ${c.esp}
+            ${fmtDateShort(c.data)} · ${c.hora} · ${medico.esp}
             ${c.obs ? `<br><i class="ti ti-note" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> ${c.obs}` : ''}
           </div>
         </div>
@@ -48,30 +49,17 @@ function renderConsultas(filtro) {
   });
 }
 
-/**
- * Aplica filtro de tipo ao clicar num botão de filtro.
- * @param {string}      filtro - tipo a filtrar
- * @param {HTMLElement} btn    - botão clicado
- */
 function filterConsultas(filtro, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderConsultas(filtro);
 }
 
-/**
- * Remove uma consulta pelo ID e re-renderiza a lista.
- * @param {number} id - ID da consulta
- */
 function cancelarConsulta(id) {
   consultas = consultas.filter(c => c.id !== id);
-
   const activeBtn = document.querySelector('.filter-btn.active');
   const filtro    = activeBtn ? activeBtn.textContent.trim().toLowerCase() : 'todas';
   renderConsultas(filtro === 'todas' ? 'todas' : filtro);
-
-  // Atualiza métricas da agenda sem mudar a seção visível
   renderAgenda();
-
   showToast('Consulta removida com sucesso.');
 }

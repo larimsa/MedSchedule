@@ -2,31 +2,29 @@
    agenda.js — Lógica da seção Agenda
    ───────────────────────────────────────────── */
 
-/**
- * Renderiza a agenda do dia atual (currentDate).
- * Atualiza métricas e timeline.
- */
 function renderAgenda() {
+  const medico = getMedicoAtivo();
+  if (!medico) return;
+
   document.getElementById('day-label').textContent = fmtDate(currentDate);
 
-  const hoje   = isoDate(currentDate);
-  const doHoje = consultas.filter(c => c.data === hoje).sort((a, b) => a.hora.localeCompare(b.hora));
-  const mes    = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}`;
-  const doMes  = consultas.filter(c => c.data.startsWith(mes));
-  const retornos = consultas.filter(c => c.tipo === 'retorno');
+  const hoje     = isoDate(currentDate);
+  const mesStr   = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}`;
+  const doMedico = getConsultasMedico(medico.id);
+  const doHoje   = doMedico.filter(c => c.data === hoje).sort((a,b) => a.hora.localeCompare(b.hora));
+  const doMes    = doMedico.filter(c => c.data.startsWith(mesStr));
+  const retornos = doMedico.filter(c => c.tipo === 'retorno');
 
-  // Métricas
-  document.getElementById('metric-hoje').textContent      = doHoje.length;
-  document.getElementById('metric-hoje-sub').textContent  = doHoje.length === 1 ? 'agendamento' : 'agendamentos';
-  document.getElementById('metric-mes').textContent       = doMes.length;
+  document.getElementById('metric-hoje').textContent     = doHoje.length;
+  document.getElementById('metric-hoje-sub').textContent = doHoje.length === 1 ? 'agendamento' : 'agendamentos';
+  document.getElementById('metric-mes').textContent      = doMes.length;
 
-  const retPct = consultas.length ? Math.round(retornos.length / consultas.length * 100) : 0;
-  document.getElementById('metric-retorno').textContent   = retPct + '%';
+  const retPct = doMedico.length ? Math.round(retornos.length / doMedico.length * 100) : 0;
+  document.getElementById('metric-retorno').textContent  = retPct + '%';
 
   if (doHoje.length > 0) {
-    const prox = doHoje[0];
-    document.getElementById('metric-proxima').textContent     = prox.hora;
-    document.getElementById('metric-proxima-sub').textContent = prox.nome;
+    document.getElementById('metric-proxima').textContent     = doHoje[0].hora;
+    document.getElementById('metric-proxima-sub').textContent = doHoje[0].nome;
   } else {
     document.getElementById('metric-proxima').textContent     = '—';
     document.getElementById('metric-proxima-sub').textContent = 'sem consultas';
@@ -62,11 +60,10 @@ function renderAgenda() {
         el.className = `appt ${a.tipo}`;
         el.setAttribute('role', 'button');
         el.setAttribute('tabindex', '0');
-        el.setAttribute('aria-label', `${a.nome} - ${a.tipo} às ${a.hora}`);
         el.innerHTML = `
           <div class="appt-info">
             <div class="appt-name">${a.nome}</div>
-            <div class="appt-detail">${a.esp}${a.obs ? ' · ' + a.obs : ''}</div>
+            <div class="appt-detail">${medico.esp}${a.obs ? ' · ' + a.obs : ''}</div>
           </div>
           <span class="appt-badge">${capitalize(a.tipo)}</span>`;
         body.appendChild(el);
@@ -79,10 +76,6 @@ function renderAgenda() {
   });
 }
 
-/**
- * Avança ou recua um dia na agenda.
- * @param {number} delta - +1 próximo, -1 anterior
- */
 function changeDay(delta) {
   currentDate.setDate(currentDate.getDate() + delta);
   renderAgenda();

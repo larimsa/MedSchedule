@@ -2,19 +2,51 @@
    perfil.js — Lógica da seção Perfil Médico
    ───────────────────────────────────────────── */
 
-/**
- * Alterna entre modo visualização e modo edição do perfil.
- * @param {boolean} on - true = modo edição, false = modo visualização
- */
+function renderPerfil() {
+  const m = getMedicoAtivo();
+  if (!m) return;
+
+  const cor   = getCorMedico(m);
+  const inits = initials(m.nome);
+
+  // Avatar
+  const av = document.getElementById('p-avatar');
+  av.textContent  = inits;
+  av.style.background  = cor.bg;
+  av.style.color       = cor.text;
+  av.style.borderColor = cor.border;
+
+  // View mode
+  document.getElementById('p-nome-view').textContent  = m.nome;
+  document.getElementById('p-crm-view').textContent   = 'CRM ' + m.crm;
+  document.getElementById('p-esp-view').textContent   = m.esp;
+  document.getElementById('p-email-view').textContent = m.email;
+  document.getElementById('p-tel-view').textContent   = m.tel;
+  document.getElementById('p-end-view').textContent   = m.end;
+  document.getElementById('p-hor-view').textContent   = m.hor;
+
+  // Preenche form de edição
+  document.getElementById('e-nome').value  = m.nome;
+  document.getElementById('e-crm').value   = m.crm;
+  document.getElementById('e-email').value = m.email;
+  document.getElementById('e-tel').value   = m.tel;
+  document.getElementById('e-end').value   = m.end;
+  document.getElementById('e-hor').value   = m.hor;
+  document.getElementById('e-esp').value   = m.esp;
+
+  toggleEdit(false);
+  renderStats();
+}
+
 function toggleEdit(on) {
   document.getElementById('view-mode').style.display = on ? 'none' : 'block';
   document.getElementById('edit-mode').style.display = on ? 'block' : 'none';
 }
 
-/**
- * Salva as alterações do formulário de edição e atualiza a visualização.
- */
 function salvarPerfil() {
+  const m = getMedicoAtivo();
+  if (!m) return;
+
   const nome  = document.getElementById('e-nome').value.trim();
   const crm   = document.getElementById('e-crm').value.trim();
   const esp   = document.getElementById('e-esp').value;
@@ -23,41 +55,36 @@ function salvarPerfil() {
   const end   = document.getElementById('e-end').value.trim();
   const hor   = document.getElementById('e-hor').value.trim();
 
-  // Atualiza campos de visualização
-  document.getElementById('p-nome-view').textContent  = nome;
-  document.getElementById('p-crm-view').textContent   = 'CRM ' + crm;
-  document.getElementById('p-esp-view').textContent   = esp;
-  document.getElementById('p-email-view').textContent = email;
-  document.getElementById('p-tel-view').textContent   = tel;
-  document.getElementById('p-end-view').textContent   = end;
-  document.getElementById('p-hor-view').textContent   = hor;
+  const idx = medicos.findIndex(med => med.id === m.id);
+  if (idx !== -1) {
+    medicos[idx] = { ...medicos[idx], nome, crm, esp, email, tel, end, hor };
+  }
 
-  // Atualiza avatar e header
-  const nomeSimples = nome.replace(/^Dr[a]?\.\s*/i, '');
-  document.getElementById('p-avatar').textContent           = initials(nomeSimples);
+  // Atualiza header
   document.getElementById('header-doctor-name').textContent = nome;
+  document.getElementById('header-doctor-esp').textContent  = esp;
 
-  toggleEdit(false);
+  renderSidebar();
+  renderPerfil();
   showToast('Perfil atualizado com sucesso!');
 }
 
-/**
- * Renderiza as estatísticas de consultas do mês no painel do perfil.
- */
 function renderStats() {
+  const m         = getMedicoAtivo();
   const container = document.getElementById('stats-container');
-  const total     = consultas.length;
+  if (!m || !container) return;
 
-  const tipos = [
-    { key: 'consulta', label: 'Consultas', cls: 'fill-green' },
-    { key: 'retorno',  label: 'Retornos',  cls: 'fill-blue'  },
-    { key: 'exame',    label: 'Exames',    cls: 'fill-amber'  },
+  const doMedico = getConsultasMedico(m.id);
+  const total    = doMedico.length;
+  const tipos    = [
+    { key:'consulta', label:'Consultas', cls:'fill-green' },
+    { key:'retorno',  label:'Retornos',  cls:'fill-blue'  },
+    { key:'exame',    label:'Exames',    cls:'fill-amber'  },
   ];
 
   let html = '';
-
   tipos.forEach(t => {
-    const n   = consultas.filter(c => c.tipo === t.key).length;
+    const n   = doMedico.filter(c => c.tipo === t.key).length;
     const pct = total > 0 ? Math.round(n / total * 100) : 0;
     html += `
       <div class="stat-row">

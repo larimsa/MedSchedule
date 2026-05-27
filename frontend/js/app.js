@@ -2,12 +2,6 @@
    app.js — Inicialização e controle de navegação
    ───────────────────────────────────────────── */
 
-/**
- * Exibe uma seção e oculta as demais.
- * Executa o render da seção ao ativar.
- * @param {string}      id  - ID da seção alvo
- * @param {HTMLElement} btn - Botão de navegação clicado
- */
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => {
@@ -16,20 +10,37 @@ function showSection(id, btn) {
   });
 
   document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-  btn.setAttribute('aria-current', 'page');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-current', 'page'); }
 
-  // Render específico por seção
   if (id === 'agenda')    renderAgenda();
-  if (id === 'consultas') renderConsultas('todas');
+  if (id === 'consultas') { renderConsultas('todas'); resetFiltros(); }
   if (id === 'agendar')   { renderHorarios(); updatePreview(); }
-  if (id === 'perfil')    renderStats();
+  if (id === 'perfil')    renderPerfil();
+  if (id === 'equipe')    renderEquipe();
 }
+
+// Fecha modal ao clicar no overlay
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('modal-medico');
+  if (e.target === modal) fecharModalMedico();
+});
+
+// Fecha modal com Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fecharModalMedico();
+});
 
 // ──────────────────────────────────────────
 //  INICIALIZAÇÃO
 // ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  const m = getMedicoAtivo();
+  if (m) {
+    document.getElementById('header-doctor-name').textContent = m.nome;
+    document.getElementById('header-doctor-esp').textContent  = m.esp;
+  }
+
+  renderSidebar();
   renderAgenda();
   renderHorarios();
 });
