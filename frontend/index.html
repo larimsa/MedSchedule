@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedSchedule — Clínica Médica</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/sections.css">
+</head>
+<body>
+
+  <!-- ══════ HEADER ══════ -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-stethoscope" aria-hidden="true"></i></div>
+      <span class="logo-name">MedSchedule</span>
+      <span class="logo-sub">Clínica Médica</span>
+    </div>
+    <div class="header-doctor" id="header-doctor">
+      <i class="ti ti-circle-check" aria-hidden="true"></i>
+      <div>
+        <div id="header-doctor-name" style="line-height:1.2">—</div>
+        <div id="header-doctor-esp" style="font-size:11px;font-weight:400;opacity:0.8;line-height:1.2">—</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════ NAV ══════ -->
+  <nav role="navigation" aria-label="Navegação principal">
+    <button class="nav-btn active" onclick="showSection('agenda', this)" aria-current="page">
+      <i class="ti ti-calendar" aria-hidden="true"></i> Agenda
+    </button>
+    <button class="nav-btn" onclick="showSection('consultas', this)">
+      <i class="ti ti-clipboard-list" aria-hidden="true"></i> Consultas
+    </button>
+    <button class="nav-btn" onclick="showSection('agendar', this)">
+      <i class="ti ti-calendar-plus" aria-hidden="true"></i> Marcar Consulta
+    </button>
+    <button class="nav-btn" onclick="showSection('perfil', this)">
+      <i class="ti ti-user-circle" aria-hidden="true"></i> Meu Perfil
+    </button>
+    <button class="nav-btn" onclick="showSection('equipe', this)">
+      <i class="ti ti-users" aria-hidden="true"></i> Equipe
+    </button>
+  </nav>
+
+  <!-- ══════ APP BODY (sidebar + conteúdo) ══════ -->
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" role="complementary" aria-label="Médicos da clínica">
+      <div class="sidebar-header">
+        <div class="sidebar-label">Médicos</div>
+        <button class="sidebar-add-btn" onclick="abrirModalMedico(null)">
+          <i class="ti ti-plus" aria-hidden="true"></i> Adicionar médico
+        </button>
+      </div>
+      <div class="sidebar-list" id="sidebar-medicos" role="list"></div>
+      <div class="sidebar-footer">
+        <div class="sidebar-stat" id="sidebar-stat"></div>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="main-content" role="main">
+
+      <!-- ── AGENDA ── -->
+      <section id="agenda" class="section active" aria-label="Agenda médica">
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label"><i class="ti ti-calendar-event" aria-hidden="true"></i> Consultas hoje</div>
+            <div class="metric-value green" id="metric-hoje">0</div>
+            <div class="metric-sub" id="metric-hoje-sub">agendamentos</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label"><i class="ti ti-clock" aria-hidden="true"></i> Próxima consulta</div>
+            <div class="metric-value amber" id="metric-proxima">—</div>
+            <div class="metric-sub" id="metric-proxima-sub"></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label"><i class="ti ti-users" aria-hidden="true"></i> Total no mês</div>
+            <div class="metric-value blue" id="metric-mes">0</div>
+            <div class="metric-sub">agendamentos</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label"><i class="ti ti-trending-up" aria-hidden="true"></i> Taxa de retorno</div>
+            <div class="metric-value green" id="metric-retorno">0%</div>
+            <div class="metric-sub">dos pacientes</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="ti ti-calendar-week" aria-hidden="true"></i> Agenda do dia</div>
+            <div class="day-nav">
+              <button class="day-nav-btn" onclick="changeDay(-1)" aria-label="Dia anterior">
+                <i class="ti ti-chevron-left" aria-hidden="true"></i>
+              </button>
+              <span class="day-label" id="day-label"></span>
+              <button class="day-nav-btn" onclick="changeDay(1)" aria-label="Próximo dia">
+                <i class="ti ti-chevron-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="timeline" id="timeline" role="list" aria-label="Horários do dia"></div>
+        </div>
+      </section>
+
+      <!-- ── CONSULTAS ── -->
+      <section id="consultas" class="section" aria-label="Lista de consultas">
+        <div class="section-title"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Consultas</div>
+        <div class="filter-bar" role="group" aria-label="Filtrar por tipo">
+          <button class="filter-btn active" onclick="filterConsultas('todas', this)">Todas</button>
+          <button class="filter-btn" onclick="filterConsultas('consulta', this)">Consulta</button>
+          <button class="filter-btn" onclick="filterConsultas('retorno', this)">Retorno</button>
+          <button class="filter-btn" onclick="filterConsultas('exame', this)">Exame</button>
+        </div>
+        <div class="consult-list" id="consult-list" role="list"></div>
+      </section>
+
+      <!-- ── AGENDAR ── -->
+      <section id="agendar" class="section" aria-label="Marcar nova consulta">
+        <div class="section-title"><i class="ti ti-calendar-plus" aria-hidden="true"></i> Marcar nova consulta</div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:1rem;"><i class="ti ti-user" aria-hidden="true"></i> Dados do paciente</div>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label for="f-nome">Nome completo *</label>
+                <input type="text" id="f-nome" placeholder="Ex: Ana Paula Ferreira" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label for="f-email">Email</label>
+                <input type="email" id="f-email" placeholder="email@exemplo.com">
+              </div>
+              <div class="form-group">
+                <label for="f-tel">Telefone</label>
+                <input type="tel" id="f-tel" placeholder="(11) 99999-9999">
+              </div>
+              <div class="form-group">
+                <label for="f-data">Data *</label>
+                <input type="date" id="f-data" oninput="updatePreview(); renderHorarios()">
+              </div>
+              <div class="form-group">
+                <label for="f-hora">Horário *</label>
+                <input type="time" id="f-hora" oninput="updatePreview()">
+              </div>
+              <div class="form-group full">
+                <label for="f-tipo">Tipo de consulta</label>
+                <select id="f-tipo" oninput="updatePreview()">
+                  <option value="consulta">Consulta</option>
+                  <option value="retorno">Retorno</option>
+                  <option value="exame">Exame</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label for="f-obs">Observações</label>
+                <textarea id="f-obs" placeholder="Informações adicionais, queixas, alergias..."></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="agendarConsulta()">
+                <i class="ti ti-check" aria-hidden="true"></i> Agendar consulta
+              </button>
+              <button class="btn-secondary" onclick="limparForm()">
+                <i class="ti ti-rotate" aria-hidden="true"></i> Limpar
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card">
+              <div class="card-title" style="margin-bottom:0.75rem;">
+                <i class="ti ti-clock" aria-hidden="true"></i> Horários disponíveis
+              </div>
+              <div id="horarios-container" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:0.75rem;">
+                <i class="ti ti-eye" aria-hidden="true"></i> Pré-visualização
+              </div>
+              <div id="preview-container">
+                <p style="font-size:13px;color:var(--text-faint);text-align:center;padding:1rem 0">
+                  Preencha os campos ao lado para visualizar o resumo.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PERFIL ── -->
+      <section id="perfil" class="section" aria-label="Perfil médico">
+        <div class="section-title"><i class="ti ti-user-circle" aria-hidden="true"></i> Meu perfil</div>
+        <div class="two-col">
+          <div class="card">
+            <!-- View mode -->
+            <div id="view-mode">
+              <div class="profile-hero">
+                <div class="avatar-lg" id="p-avatar">—</div>
+                <div>
+                  <div class="profile-name" id="p-nome-view">—</div>
+                  <div class="profile-esp"  id="p-esp-view">—</div>
+                  <div class="profile-crm"  id="p-crm-view">—</div>
+                </div>
+              </div>
+              <div class="profile-fields">
+                <div class="profile-field">
+                  <div class="pf-label"><i class="ti ti-mail" aria-hidden="true"></i> Email</div>
+                  <div class="pf-value" id="p-email-view">—</div>
+                </div>
+                <div class="profile-field">
+                  <div class="pf-label"><i class="ti ti-phone" aria-hidden="true"></i> Telefone</div>
+                  <div class="pf-value" id="p-tel-view">—</div>
+                </div>
+                <div class="profile-field">
+                  <div class="pf-label"><i class="ti ti-map-pin" aria-hidden="true"></i> Endereço</div>
+                  <div class="pf-value" id="p-end-view">—</div>
+                </div>
+                <div class="profile-field">
+                  <div class="pf-label"><i class="ti ti-clock" aria-hidden="true"></i> Horário</div>
+                  <div class="pf-value" id="p-hor-view">—</div>
+                </div>
+              </div>
+              <div style="margin-top:1.25rem;">
+                <button class="btn-secondary" onclick="toggleEdit(true)">
+                  <i class="ti ti-edit" aria-hidden="true"></i> Editar perfil
+                </button>
+              </div>
+            </div>
+            <!-- Edit mode -->
+            <div id="edit-mode" style="display:none;">
+              <div class="card-title" style="margin-bottom:1rem;"><i class="ti ti-edit" aria-hidden="true"></i> Editar perfil</div>
+              <div class="form-grid">
+                <div class="form-group full"><label for="e-nome">Nome completo</label><input type="text" id="e-nome"></div>
+                <div class="form-group"><label for="e-crm">CRM</label><input type="text" id="e-crm"></div>
+                <div class="form-group">
+                  <label for="e-esp">Especialidade</label>
+                  <select id="e-esp">
+                    <option>Cardiologia</option><option>Dermatologia</option><option>Pediatria</option>
+                    <option>Ortopedia</option><option>Clínica Geral</option><option>Neurologia</option>
+                    <option>Ginecologia</option><option>Oftalmologia</option><option>Psiquiatria</option>
+                    <option>Endocrinologia</option><option>Urologia</option><option>Reumatologia</option>
+                  </select>
+                </div>
+                <div class="form-group"><label for="e-email">Email</label><input type="email" id="e-email"></div>
+                <div class="form-group"><label for="e-tel">Telefone</label><input type="tel" id="e-tel"></div>
+                <div class="form-group full"><label for="e-end">Endereço</label><input type="text" id="e-end"></div>
+                <div class="form-group full"><label for="e-hor">Horário de atendimento</label><input type="text" id="e-hor"></div>
+              </div>
+              <div class="form-actions">
+                <button class="btn-primary" onclick="salvarPerfil()"><i class="ti ti-check" aria-hidden="true"></i> Salvar</button>
+                <button class="btn-secondary" onclick="toggleEdit(false)"><i class="ti ti-x" aria-hidden="true"></i> Cancelar</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:1rem;"><i class="ti ti-chart-bar" aria-hidden="true"></i> Estatísticas</div>
+            <div id="stats-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── EQUIPE ── -->
+      <section id="equipe" class="section" aria-label="Equipe médica">
+        <div class="equipe-header">
+          <div class="section-title" style="margin:0"><i class="ti ti-users" aria-hidden="true"></i> Equipe médica</div>
+          <button class="btn-primary" onclick="abrirModalMedico(null)">
+            <i class="ti ti-plus" aria-hidden="true"></i> Adicionar médico
+          </button>
+        </div>
+        <div class="equipe-grid" id="equipe-grid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════ MODAL MÉDICO ══════ -->
+  <div class="modal-overlay" id="modal-medico" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-titulo">Adicionar médico</div>
+        <button class="btn-icon" onclick="fecharModalMedico()" aria-label="Fechar modal">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="m-nome">Nome completo *</label>
+          <input type="text" id="m-nome" placeholder="Dr. Nome Sobrenome">
+        </div>
+        <div class="form-group">
+          <label for="m-crm">CRM *</label>
+          <input type="text" id="m-crm" placeholder="000000-SP">
+        </div>
+        <div class="form-group">
+          <label for="m-esp">Especialidade</label>
+          <select id="m-esp">
+            <option>Cardiologia</option><option>Dermatologia</option><option>Pediatria</option>
+            <option>Ortopedia</option><option>Clínica Geral</option><option>Neurologia</option>
+            <option>Ginecologia</option><option>Oftalmologia</option><option>Psiquiatria</option>
+            <option>Endocrinologia</option><option>Urologia</option><option>Reumatologia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="m-email">Email</label>
+          <input type="email" id="m-email" placeholder="medico@clinica.com">
+        </div>
+        <div class="form-group">
+          <label for="m-tel">Telefone</label>
+          <input type="tel" id="m-tel" placeholder="(11) 99999-9999">
+        </div>
+        <div class="form-group full">
+          <label for="m-end">Endereço / Consultório</label>
+          <input type="text" id="m-end" placeholder="Av. Paulista, 1000 — SP">
+        </div>
+        <div class="form-group full">
+          <label for="m-hor">Horário de atendimento</label>
+          <input type="text" id="m-hor" placeholder="Seg–Sex, 08h–18h">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-danger" id="btn-deletar-medico" onclick="confirmarDeletarMedico()" style="display:none">
+          <i class="ti ti-trash" aria-hidden="true"></i> Remover médico
+        </button>
+        <div class="modal-footer-right">
+          <button class="btn-secondary" onclick="fecharModalMedico()">Cancelar</button>
+          <button class="btn-primary" onclick="salvarModalMedico()">
+            <i class="ti ti-check" aria-hidden="true"></i> Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i id="toast-icon" class="ti ti-check" aria-hidden="true"></i>
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- Scripts (ordem importa) -->
+  <script src="js/data.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/agenda.js"></script>
+  <script src="js/consultas.js"></script>
+  <script src="js/agendar.js"></script>
+  <script src="js/perfil.js"></script>
+  <script src="js/medicos.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
