@@ -81,7 +81,7 @@ function updatePreview() {
     </div>`;
 }
 
-function agendarConsulta() {
+async function agendarConsulta() {
   const medico = getMedicoAtivo();
   if (!medico) { showToast('Selecione um médico primeiro.', true); return; }
 
@@ -97,13 +97,17 @@ function agendarConsulta() {
   if (!data) { showToast('Selecione uma data.', true); document.getElementById('f-data').focus(); return; }
   if (!hora) { showToast('Selecione um horário.', true); document.getElementById('f-hora').focus(); return; }
 
-  const conflito = consultas.find(c => c.medicoId === medico.id && c.data === data && c.hora === hora);
-  if (conflito) { showToast(`Horário ${hora} já está ocupado para ${medico.nome}!`, true); return; }
-
-  consultas.push({ id: nextConsultaId++, medicoId: medico.id, nome, email, tel, data, hora, tipo, obs });
-  showToast(`Consulta de ${nome} agendada com ${medico.nome}!`);
-  limparForm();
-  renderHorarios();
+  try {
+    const criada = await ConsultasAPI.criar({
+      medicoId: medico.id, nome, email, tel, data, hora, tipo, obs,
+    });
+    consultas.push(criada);
+    showToast(`Consulta de ${nome} agendada com ${medico.nome}!`);
+    limparForm();
+    renderHorarios();
+  } catch (e) {
+    showToast(e.message, true);
+  }
 }
 
 function limparForm() {

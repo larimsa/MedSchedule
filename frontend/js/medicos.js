@@ -106,7 +106,7 @@ function fecharModalMedico() {
   editandoMedicoId = null;
 }
 
-function salvarModalMedico() {
+async function salvarModalMedico() {
   const nome  = document.getElementById('m-nome').value.trim();
   const crm   = document.getElementById('m-crm').value.trim();
   const email = document.getElementById('m-email').value.trim();
@@ -118,31 +118,34 @@ function salvarModalMedico() {
   if (!nome) { showToast('Informe o nome do médico.', true); document.getElementById('m-nome').focus(); return; }
   if (!crm)  { showToast('Informe o CRM.', true); document.getElementById('m-crm').focus(); return; }
 
-  if (editandoMedicoId !== null) {
-    // Atualizar existente
-    const idx = medicos.findIndex(m => m.id === editandoMedicoId);
-    if (idx !== -1) {
-      medicos[idx] = { ...medicos[idx], nome, crm, email, tel, end, hor, esp };
+  try {
+    if (editandoMedicoId !== null) {
+      const atual = medicos.find(m => m.id === editandoMedicoId) || {};
+      const atualizado = await MedicosAPI.atualizar(editandoMedicoId, {
+        ...atual, nome, crm, email, tel, end, hor, esp,
+      });
+      const idx = medicos.findIndex(m => m.id === editandoMedicoId);
+      if (idx !== -1) medicos[idx] = atualizado;
+      showToast(`${nome} atualizado(a)!`);
+      if (editandoMedicoId === medicoAtivoId) selecionarMedico(medicoAtivoId);
+    } else {
+      const novoCor = medicos.length % CORES_AVATAR.length;
+      const novo = await MedicosAPI.criar({
+        nome, crm, email, tel, end, hor, esp, cor: novoCor,
+      });
+      medicos.push(novo);
+      if (medicoAtivoId === null) medicoAtivoId = novo.id;
+      showToast(`${nome} adicionado(a) à clínica!`);
     }
-    showToast(`${nome} atualizado(a)!`);
-
-    // Se editou o médico ativo, atualiza header e re-render
-    if (editandoMedicoId === medicoAtivoId) {
-      selecionarMedico(medicoAtivoId);
-    }
-  } else {
-    // Novo médico
-    const novoCor = nextMedicoId % CORES_AVATAR.length;
-    medicos.push({ id: nextMedicoId++, nome, crm, email, tel, end, hor, esp, cor: novoCor });
-    showToast(`${nome} adicionado(a) à clínica!`);
+    fecharModalMedico();
+    renderSidebar();
+    renderEquipe();
+  } catch (e) {
+    showToast(e.message, true);
   }
-
-  fecharModalMedico();
-  renderSidebar();
-  renderEquipe();
 }
 
-function confirmarDeletarMedico() {
+async function confirmarDeletarMedico() {
   if (editandoMedicoId === null) return;
   const m = medicos.find(m => m.id === editandoMedicoId);
   if (!m) return;
@@ -152,11 +155,16 @@ function confirmarDeletarMedico() {
     return;
   }
 
-  // Remove médico e suas consultas
-  medicos  = medicos.filter(m => m.id !== editandoMedicoId);
+  try {
+    await MedicosAPI.deletar(editandoMedicoId);
+  } catch (e) {
+    showToast(e.message, true);
+    return;
+  }
+
+  medicos   = medicos.filter(m => m.id !== editandoMedicoId);
   consultas = consultas.filter(c => c.medicoId !== editandoMedicoId);
 
-  // Se era o ativo, selecionar o primeiro
   if (medicoAtivoId === editandoMedicoId) {
     selecionarMedico(medicos[0].id);
   }

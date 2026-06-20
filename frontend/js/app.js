@@ -31,13 +31,20 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ──────────────────────────────────────────
-//  INICIALIZAÇÃO
+//  INICIALIZAÇÃO (carrega do backend)
 // ──────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const m = getMedicoAtivo();
-  if (m) {
+document.addEventListener('DOMContentLoaded', async () => {
+  await carregarMedicos();
+  await carregarConsultas();
+
+  if (medicos.length > 0) {
+    medicoAtivoId = medicos[0].id;
+    const m = getMedicoAtivo();
     document.getElementById('header-doctor-name').textContent = m.nome;
     document.getElementById('header-doctor-esp').textContent  = m.esp;
+  } else {
+    document.getElementById('header-doctor-name').textContent = 'Nenhum médico cadastrado';
+    document.getElementById('header-doctor-esp').textContent  = 'Clique em "Equipe" para adicionar';
   }
 
   renderSidebar();
