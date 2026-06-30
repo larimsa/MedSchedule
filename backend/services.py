@@ -126,16 +126,22 @@ def validar_horario_medico(h: time, horario_medico: Optional[str]) -> None:
     """
     if not horario_medico:
         return
-    janelas = [j.strip() for j in horario_medico.split(",") if j.strip()]
-    for janela in janelas:
+    janelas = []
+    for parte in horario_medico.split(","):
+        parte = parte.strip()
+        if not parte or "-" not in parte:
+            continue
         try:
-            ini_s, fim_s = janela.split("-")
+            ini_s, fim_s = parte.split("-", 1)
             ini = datetime.strptime(ini_s.strip(), "%H:%M").time()
             fim = datetime.strptime(fim_s.strip(), "%H:%M").time()
+            janelas.append((ini, fim))
         except ValueError:
-            raise RegraNegocioError(
-                "Horário do médico mal formatado (use 'HH:MM-HH:MM')"
-            )
+            # Formato livre (ex.: "Seg–Sex, 08h–18h") — ignora janela específica
+            return
+    if not janelas:
+        return
+    for ini, fim in janelas:
         if ini <= h < fim:
             return
     raise RegraNegocioError(
