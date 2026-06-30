@@ -1,2 +1,22 @@
 .DS_Store
 .env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# SQLite local
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
