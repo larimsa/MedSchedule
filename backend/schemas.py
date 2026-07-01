@@ -2,6 +2,7 @@
 # schemas.py — Validação de dados (Pydantic)
 # ─────────────────────────────────────────────
 
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -36,6 +37,8 @@ class MedicoUpdate(BaseModel):
 
 class MedicoOut(MedicoBase):
     id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -70,6 +73,8 @@ class ConsultaUpdate(BaseModel):
 
 class ConsultaOut(ConsultaBase):
     id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

@@ -55,7 +55,13 @@ function filterConsultas(filtro, btn) {
   renderConsultas(filtro);
 }
 
-function cancelarConsulta(id) {
+async function cancelarConsulta(id) {
+  try {
+    await ConsultasAPI.deletar(id);
+  } catch (e) {
+    showToast(e.message, true);
+    return;
+  }
   consultas = consultas.filter(c => c.id !== id);
   const activeBtn = document.querySelector('.filter-btn.active');
   const filtro    = activeBtn ? activeBtn.textContent.trim().toLowerCase() : 'todas';

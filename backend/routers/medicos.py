@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-import models, schemas
+import models, schemas, services
 from database import get_db
 
 router = APIRouter(prefix="/medicos", tags=["Médicos"])
@@ -30,6 +30,13 @@ def buscar_medico(medico_id: int, db: Session = Depends(get_db)):
 # POST /medicos — cria um novo médico
 @router.post("/", response_model=schemas.MedicoOut, status_code=201)
 def criar_medico(dados: schemas.MedicoCreate, db: Session = Depends(get_db)):
+    # Regras de formato (CRM/email)
+    try:
+        services.validar_crm(dados.crm)
+        services.validar_email(dados.email)
+    except services.RegraNegocioError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     # Verifica CRM duplicado
     existente = db.query(models.Medico).filter(models.Medico.crm == dados.crm).first()
     if existente:
@@ -48,6 +55,14 @@ def atualizar_medico(medico_id: int, dados: schemas.MedicoUpdate, db: Session = 
     medico = db.query(models.Medico).filter(models.Medico.id == medico_id).first()
     if not medico:
         raise HTTPException(status_code=404, detail="Médico não encontrado")
+
+    try:
+        if dados.crm is not None:
+            services.validar_crm(dados.crm)
+        if dados.email is not None:
+            services.validar_email(dados.email)
+    except services.RegraNegocioError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     for campo, valor in dados.model_dump(exclude_unset=True).items():
         setattr(medico, campo, valor)

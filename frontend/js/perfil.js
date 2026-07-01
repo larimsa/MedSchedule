@@ -43,7 +43,7 @@ function toggleEdit(on) {
   document.getElementById('edit-mode').style.display = on ? 'block' : 'none';
 }
 
-function salvarPerfil() {
+async function salvarPerfil() {
   const m = getMedicoAtivo();
   if (!m) return;
 
@@ -55,18 +55,22 @@ function salvarPerfil() {
   const end   = document.getElementById('e-end').value.trim();
   const hor   = document.getElementById('e-hor').value.trim();
 
-  const idx = medicos.findIndex(med => med.id === m.id);
-  if (idx !== -1) {
-    medicos[idx] = { ...medicos[idx], nome, crm, esp, email, tel, end, hor };
+  try {
+    const atualizado = await MedicosAPI.atualizar(m.id, {
+      ...m, nome, crm, esp, email, tel, end, hor,
+    });
+    const idx = medicos.findIndex(med => med.id === m.id);
+    if (idx !== -1) medicos[idx] = atualizado;
+
+    document.getElementById('header-doctor-name').textContent = nome;
+    document.getElementById('header-doctor-esp').textContent  = esp;
+
+    renderSidebar();
+    renderPerfil();
+    showToast('Perfil atualizado com sucesso!');
+  } catch (e) {
+    showToast(e.message, true);
   }
-
-  // Atualiza header
-  document.getElementById('header-doctor-name').textContent = nome;
-  document.getElementById('header-doctor-esp').textContent  = esp;
-
-  renderSidebar();
-  renderPerfil();
-  showToast('Perfil atualizado com sucesso!');
 }
 
 function renderStats() {

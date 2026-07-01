@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────
-   data.js — Estado global, dados iniciais
-             e funções utilitárias
+   data.js — Estado global, constantes e utilitários
+   (os dados de médicos/consultas vêm do backend agora)
    ───────────────────────────────────────────── */
 
 // ──────────────────────────────────────────
@@ -38,100 +38,36 @@ const CORES_AVATAR = [
 ];
 
 // ──────────────────────────────────────────
-//  ESTADO GLOBAL
+//  ESTADO GLOBAL (preenchido pela API)
 // ──────────────────────────────────────────
 let currentDate = new Date();
 currentDate.setHours(0,0,0,0);
 
-let nextMedicoId  = 10;
-let nextConsultaId = 30;
+let medicos       = [];   // [{id, nome, crm, esp, email, tel, end, hor, cor}]
+let consultas     = [];   // [{id, medicoId, nome, email, tel, data, hora, tipo, obs}]
+let medicoAtivoId = null;
 
-// Médico ativo (ID)
-let medicoAtivoId = 1;
+// ──────────────────────────────────────────
+//  CARREGAMENTO DO BACKEND
+// ──────────────────────────────────────────
 
-// Lista de médicos da clínica
-let medicos = [
-  {
-    id: 1, nome: 'Dr. Carlos Mendes', crm: '123456-SP',
-    esp: 'Cardiologia', email: 'carlos@medschedule.com',
-    tel: '(11) 99999-9999', end: 'Av. Paulista, 1000 — SP',
-    hor: 'Seg–Sex, 08h–18h', cor: 0
-  },
-  {
-    id: 2, nome: 'Dra. Fernanda Lima', crm: '234567-SP',
-    esp: 'Dermatologia', email: 'fernanda@medschedule.com',
-    tel: '(11) 98888-8888', end: 'Av. Paulista, 1000 — SP',
-    hor: 'Seg–Sex, 09h–17h', cor: 1
-  },
-  {
-    id: 3, nome: 'Dr. Rafael Souza', crm: '345678-SP',
-    esp: 'Pediatria', email: 'rafael@medschedule.com',
-    tel: '(11) 97777-7777', end: 'Av. Paulista, 1000 — SP',
-    hor: 'Seg–Sex, 08h–16h', cor: 2
-  },
-  {
-    id: 4, nome: 'Dra. Camila Torres', crm: '456789-SP',
-    esp: 'Neurologia', email: 'camila@medschedule.com',
-    tel: '(11) 96666-6666', end: 'Av. Paulista, 1000 — SP',
-    hor: 'Ter–Sáb, 10h–18h', cor: 3
-  },
-  {
-    id: 5, nome: 'Dr. André Oliveira', crm: '567890-SP',
-    esp: 'Ortopedia', email: 'andre@medschedule.com',
-    tel: '(11) 95555-5555', end: 'Av. Paulista, 1000 — SP',
-    hor: 'Seg–Sex, 07h–15h', cor: 4
-  },
-  {
-    id: 6, nome: 'Dra. Juliana Rocha', crm: '678901-SP',
-    esp: 'Ginecologia', email: 'juliana@medschedule.com',
-    tel: '(11) 94444-4444', end: 'Av. Paulista, 1000 — SP',
-    hor: 'Seg–Sex, 08h–18h', cor: 5
-  },
-];
+async function carregarMedicos() {
+  try {
+    medicos = await MedicosAPI.listar();
+  } catch (e) {
+    medicos = [];
+    showToast('Não foi possível carregar médicos: ' + e.message, true);
+  }
+}
 
-// Consultas (com medicoId)
-let consultas = [
-  // Dr. Carlos Mendes — Cardiologia
-  { id:1,  medicoId:1, nome:'João Silva',       email:'joao@email.com',    tel:'(11) 91111-1111', data:'2026-05-27', hora:'09:00', tipo:'consulta', obs:'' },
-  { id:2,  medicoId:1, nome:'Maria Oliveira',   email:'maria@email.com',   tel:'(11) 92222-2222', data:'2026-05-27', hora:'10:30', tipo:'retorno',  obs:'Resultado de exame pendente' },
-  { id:3,  medicoId:1, nome:'Pedro Santos',     email:'pedro@email.com',   tel:'(11) 93333-3333', data:'2026-05-27', hora:'14:00', tipo:'exame',    obs:'' },
-  { id:4,  medicoId:1, nome:'Ana Lima',         email:'ana@email.com',     tel:'(11) 94444-4444', data:'2026-05-27', hora:'15:30', tipo:'consulta', obs:'Primeira consulta' },
-  { id:5,  medicoId:1, nome:'Carlos Rocha',     email:'carlos@email.com',  tel:'(11) 95555-5555', data:'2026-05-28', hora:'09:00', tipo:'retorno',  obs:'' },
-  { id:6,  medicoId:1, nome:'Beatriz Costa',    email:'bea@email.com',     tel:'(11) 96666-6666', data:'2026-05-28', hora:'11:00', tipo:'consulta', obs:'' },
-  { id:7,  medicoId:1, nome:'Lucas Ferreira',   email:'lucas@email.com',   tel:'(11) 97777-7777', data:'2026-05-29', hora:'10:00', tipo:'exame',    obs:'Eletro + eco' },
-
-  // Dra. Fernanda Lima — Dermatologia
-  { id:8,  medicoId:2, nome:'Isabela Neves',    email:'isa@email.com',     tel:'(11) 91212-1212', data:'2026-05-27', hora:'09:30', tipo:'consulta', obs:'Mancha suspeita no braço' },
-  { id:9,  medicoId:2, nome:'Roberto Alves',    email:'rob@email.com',     tel:'(11) 91313-1313', data:'2026-05-27', hora:'11:00', tipo:'retorno',  obs:'' },
-  { id:10, medicoId:2, nome:'Patrícia Duarte',  email:'pat@email.com',     tel:'(11) 91414-1414', data:'2026-05-27', hora:'14:30', tipo:'consulta', obs:'' },
-  { id:11, medicoId:2, nome:'Thiago Campos',    email:'thiago@email.com',  tel:'(11) 91515-1515', data:'2026-05-28', hora:'10:00', tipo:'exame',    obs:'Biópsia de pele' },
-  { id:12, medicoId:2, nome:'Larissa Monteiro', email:'lari@email.com',    tel:'(11) 91616-1616', data:'2026-05-29', hora:'15:00', tipo:'consulta', obs:'' },
-
-  // Dr. Rafael Souza — Pediatria
-  { id:13, medicoId:3, nome:'Sofia Mendes',     email:'sofia@email.com',   tel:'(11) 91717-1717', data:'2026-05-27', hora:'08:30', tipo:'consulta', obs:'Febre persistente' },
-  { id:14, medicoId:3, nome:'Miguel Azevedo',   email:'mig@email.com',     tel:'(11) 91818-1818', data:'2026-05-27', hora:'10:00', tipo:'retorno',  obs:'Pós-vacinação' },
-  { id:15, medicoId:3, nome:'Laura Barros',     email:'laura@email.com',   tel:'(11) 91919-1919', data:'2026-05-27', hora:'14:00', tipo:'consulta', obs:'' },
-  { id:16, medicoId:3, nome:'Davi Carvalho',    email:'davi@email.com',    tel:'(11) 92020-2020', data:'2026-05-28', hora:'09:00', tipo:'exame',    obs:'Hemograma' },
-  { id:17, medicoId:3, nome:'Alice Ribeiro',    email:'alice@email.com',   tel:'(11) 92121-2121', data:'2026-05-28', hora:'11:00', tipo:'consulta', obs:'Primeira consulta' },
-
-  // Dra. Camila Torres — Neurologia
-  { id:18, medicoId:4, nome:'Marcelo Pinto',    email:'marcelo@email.com', tel:'(11) 92222-2222', data:'2026-05-27', hora:'10:00', tipo:'consulta', obs:'Enxaqueca crônica' },
-  { id:19, medicoId:4, nome:'Renata Faria',     email:'renata@email.com',  tel:'(11) 92323-2323', data:'2026-05-27', hora:'14:30', tipo:'retorno',  obs:'' },
-  { id:20, medicoId:4, nome:'Paulo Gonçalves',  email:'paulo@email.com',   tel:'(11) 92424-2424', data:'2026-05-28', hora:'10:30', tipo:'exame',    obs:'EEG agendado' },
-  { id:21, medicoId:4, nome:'Cristina Moura',   email:'cris@email.com',    tel:'(11) 92525-2525', data:'2026-05-29', hora:'14:00', tipo:'consulta', obs:'' },
-
-  // Dr. André Oliveira — Ortopedia
-  { id:22, medicoId:5, nome:'Gustavo Leal',     email:'gus@email.com',     tel:'(11) 92626-2626', data:'2026-05-27', hora:'08:00', tipo:'consulta', obs:'Dor no joelho' },
-  { id:23, medicoId:5, nome:'Fernanda Braga',   email:'fern2@email.com',   tel:'(11) 92727-2727', data:'2026-05-27', hora:'11:30', tipo:'retorno',  obs:'Pós-operatório' },
-  { id:24, medicoId:5, nome:'Rodrigo Cunha',    email:'rod@email.com',     tel:'(11) 92828-2828', data:'2026-05-28', hora:'09:30', tipo:'exame',    obs:'Raio-X coluna' },
-  { id:25, medicoId:5, nome:'Aline Correia',    email:'aline@email.com',   tel:'(11) 92929-2929', data:'2026-05-28', hora:'14:00', tipo:'consulta', obs:'' },
-
-  // Dra. Juliana Rocha — Ginecologia
-  { id:26, medicoId:6, nome:'Vanessa Teixeira', email:'van@email.com',     tel:'(11) 93030-3030', data:'2026-05-27', hora:'09:00', tipo:'consulta', obs:'Pré-natal' },
-  { id:27, medicoId:6, nome:'Sandra Vieira',    email:'san@email.com',     tel:'(11) 93131-3131', data:'2026-05-27', hora:'10:30', tipo:'retorno',  obs:'Resultado de ultrassom' },
-  { id:28, medicoId:6, nome:'Débora Castro',    email:'deb@email.com',     tel:'(11) 93232-3232', data:'2026-05-27', hora:'14:00', tipo:'consulta', obs:'Primeira consulta' },
-  { id:29, medicoId:6, nome:'Mariana Luz',      email:'mari@email.com',    tel:'(11) 93333-3333', data:'2026-05-28', hora:'09:30', tipo:'exame',    obs:'Papanicolau' },
-];
+async function carregarConsultas() {
+  try {
+    consultas = await ConsultasAPI.listar();
+  } catch (e) {
+    consultas = [];
+    showToast('Não foi possível carregar consultas: ' + e.message, true);
+  }
+}
 
 // ──────────────────────────────────────────
 //  UTILITÁRIOS
@@ -151,11 +87,11 @@ function fmtDateShort(iso) {
 }
 
 function initials(nome) {
-  return nome.replace(/^Dr[a]?\.\s*/i,'').split(' ').filter(Boolean).slice(0,2).map(n => n[0]).join('').toUpperCase();
+  return (nome || '').replace(/^Dr[a]?\.\s*/i,'').split(' ').filter(Boolean).slice(0,2).map(n => n[0]).join('').toUpperCase();
 }
 
 function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return (str || '').charAt(0).toUpperCase() + (str || '').slice(1);
 }
 
 function getMedicoAtivo() {
@@ -172,5 +108,5 @@ function getHorariosLivres(dataISO, medicoId, limite = 6) {
 }
 
 function getCorMedico(medico) {
-  return CORES_AVATAR[medico.cor % CORES_AVATAR.length];
+  return CORES_AVATAR[(medico.cor || 0) % CORES_AVATAR.length];
 }

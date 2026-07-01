@@ -75,5 +75,5 @@ db.add_all(consultas)
 db.commit()
 db.close()
 
-print("✅ Banco populado com sucesso!")
-print(f"   {len(medicos)} médicos | {len(consultas)} consultas")
+print("Banco populado com sucesso!")
+print(f"   {len(medicos)} medicos | {len(consultas)} consultas")
