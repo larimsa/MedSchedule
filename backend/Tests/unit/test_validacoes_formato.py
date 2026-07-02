@@ -122,7 +122,6 @@ class TestValidarCrm:
             services.validar_crm(crm_invalido)
 
 
-
 class TestValidarTipo:
 
     @pytest.mark.parametrize("tipo", ["consulta", "retorno", "exame"])
